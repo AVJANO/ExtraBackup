@@ -1,5 +1,6 @@
 # ExtraBackup
 ExtraBackup——为你的存档找一个（好几个）温馨的家
+
 基于MCDR实现的存档分布式备份插件，可以自动将您的存档上传备份至另一块硬盘、nas甚至是百度网盘
 
 Extra Backup v0.1.0 beta版本已经发布啦
