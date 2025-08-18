@@ -1,4 +1,7 @@
+#Open Source License: GNU General Public License v3.0
+
 import mcdreforged.api.all as mcdr
+from pathlib import Path
 import ftplib
 import shutil
 import json
@@ -15,7 +18,7 @@ PLUGIN_METADATA = {
     'author': 'avjano',
     'link': 'https://github.com/AVJANO/ExtraBackup',
     'dependencies': {
-        'mcdreforged': '>=1.0.0'
+        'mcdreforged': '>=2.14.7'
     }
 }
 
@@ -41,7 +44,7 @@ backup_path={
     {
         "enable":"true",
         "mode":"local",
-        "address":"/Volumes/T7\ Shield/XCraft\ Server/XCraft_Mirror/pb_files/export",
+        "address":"/abc/folder",
         "username":"",
         "password":""
     }
@@ -78,10 +81,10 @@ def backup_path_loader():
         with open(backup_config_path , "w") as f:
             json.dump(backup_path , f , indent=4 , ensure_ascii=False)
             return backup_path
-
+        
+@mcdr.new_thread
 def upload(backup_name , _backup_path , local_file):
     global uploading
-    print("开始上传存档...")
     mode=_backup_path["mode"]
     if mode=="ftp":
         uploading = True
@@ -100,9 +103,11 @@ def upload(backup_name , _backup_path , local_file):
             uploading=True
             address=_backup_path["address"]
             print("开始向"+address+"上传备份"+local_file)
-            abs_address=os.path.abspath(address)
-            shutil.copy(local_file , abs_address)
-            print("备份"+local_file+"上传成功！")
+            if Path(local_file).name not in os.listdir(_backup_path["address"]):
+                shutil.copy(local_file , address)
+                print("备份"+local_file+"向"+address+"上传成功！")
+            else:
+                print("已跳过向"+address+"备份，原因是：已存在同名文件")
         except Exception as e:
             print("向"+backup_name+"上传备份失败！原因是：")
             print(e)
@@ -119,6 +124,7 @@ def upload(backup_name , _backup_path , local_file):
     else:
         print("无法向"+backup_name+"备份！原因是：不支持的协议("+mode+")！")
 
+@mcdr.new_thread
 def download(backup_path , backup_file):
     global downloading
     pass
@@ -138,6 +144,10 @@ def downloadall():
 
 def abort():
     pass
+
+def make_list():
+    for file in os.listdir(config["localfolder"]):
+        print(file)
     
 def on_load(server , pre_state):
     global config,backup_path
@@ -178,6 +188,7 @@ def on_load(server , pre_state):
         exb_command.command("!!exb downloadall",downloadall)
         exb_command.command("!!exb upload <file_name>",upload)
         exb_command.command("!!exb download <file_name>",download)
+        exb_command.command("!!exb list",make_list)
         exb_command.command("!!exb abort",abort)
         exb_command.arg("file_name",mcdr.Text)
         exb_command.register(server)
