@@ -2,14 +2,18 @@
 
 import mcdreforged.api.all as mcdr
 from pathlib import Path
+import threading
+import schedule
 import ftplib
 import shutil
+import time
 import json
 import os
+import re
 
 PLUGIN_METADATA = {
     'id': 'extra_backup',
-    'version': '0.1.0',
+    'version': '0.1.2',
     'name': 'Extra Backup',
     'description': {
         "zh_cn":"全新分布式备份插件，为您的珍贵存档增添一份安心！",
@@ -24,11 +28,11 @@ PLUGIN_METADATA = {
 
 default_config = {
                     "enable":"true",
-                    "mode":"normal",
+                    "mode":"pb",
                     "localfolder":"",
-                    "auto_create_backup":"false",
-                    "auto_upload":"false",
-                    "multithreading":"false"
+                    "multithreading":"true",
+                    "schedule_backup":{"enable":"true",
+                                "interval":"3m"}
                   }
 config=default_config.copy()
 backup_path={
@@ -44,7 +48,7 @@ backup_path={
     {
         "enable":"true",
         "mode":"local",
-        "address":"/abc/folder",
+        "address":"/folder/example",
         "username":"",
         "password":""
     }
@@ -57,6 +61,24 @@ config_path=os.path.join(os.getcwd(),"config")
 config_folder=os.path.join(config_path,"extra_backup")
 config_file=os.path.join(config_folder,"config.json")
 backup_config_path=os.path.join(config_folder,"backup_path.json")
+
+def time_str(s: str) -> int:
+    """
+    把类似 "1h30m", "2d3h15m20s" 转换成总秒数
+    """
+    units = {
+        "s": 1,
+        "m": 60,
+        "h": 3600,
+        "d": 86400
+    }
+    matches = re.findall(r"(\d+)([smhd])", s.strip().lower())
+    if not matches:
+        raise ValueError(f"无效的时间格式: {s}")
+
+    total_seconds = sum(int(num) * units[unit] for num, unit in matches)
+    return total_seconds
+
 
 def config_loader():
     if os.path.exists(config_folder):
@@ -72,7 +94,8 @@ def config_loader():
         with open(config_file , "w") as f:
             json.dump(default_config , f , indent=4 , ensure_ascii=False)
         return default_config
-    
+
+
 def backup_path_loader():
     if os.path.exists(backup_config_path):
         with open(backup_config_path) as f:
@@ -82,6 +105,7 @@ def backup_path_loader():
             json.dump(backup_path , f , indent=4 , ensure_ascii=False)
             return backup_path
         
+
 @mcdr.new_thread
 def upload(backup_name , _backup_path , local_file):
     global uploading
@@ -107,7 +131,7 @@ def upload(backup_name , _backup_path , local_file):
                 shutil.copy(local_file , address)
                 print("备份"+local_file+"向"+address+"上传成功！")
             else:
-                print("已跳过向"+address+"备份，原因是：已存在同名文件")
+                print("已跳过向"+address+"备份，原因是：已存在同名文件"+Path(local_file).name)
         except Exception as e:
             print("向"+backup_name+"上传备份失败！原因是：")
             print(e)
@@ -124,13 +148,18 @@ def upload(backup_name , _backup_path , local_file):
     else:
         print("无法向"+backup_name+"备份！原因是：不支持的协议("+mode+")！")
 
+
 @mcdr.new_thread
 def download(backup_path , backup_file):
     global downloading
     pass
 
-def uploadall():
-    print("正在启动上传所有备份")
+
+def uploadall(server:mcdr.PluginServerInterface,source):
+    if source=="schedule":
+        print("定时备份触发，开始上传备份")
+    else:
+        print("手动备份触发，开始上传备份")
     for name in backup_path:
         backup_dest=backup_path[name]
         if backup_dest["enable"]=="true":
@@ -139,16 +168,41 @@ def uploadall():
         else:
             print("已跳过"+name+"备份")
 
+
 def downloadall():
     pass
+
 
 def abort():
     pass
 
+
 def make_list():
     for file in os.listdir(config["localfolder"]):
         print(file)
+
     
+@mcdr.new_thread
+def backup_timer(schedule_config,server:mcdr.PluginServerInterface):
+    if schedule_config["enable"]=="true":
+        server.logger.info("定时备份已启动")
+        seconds = time_str(schedule_config["interval"])
+        schedule.every(seconds).seconds.do(uploadall,server,source="schedule")
+    else:
+        server.logger.info("定时备份未启动")
+
+
+def start_scheduler_thread(server):
+    def loop():
+        while True:
+            try:
+                schedule.run_pending()
+            except Exception as e:
+                server.logger.error(f"[ExtraBackup] 定时任务执行失败: {e}")
+            time.sleep(1)
+    threading.Thread(target=loop, daemon=True).start()
+
+
 def on_load(server , pre_state):
     global config,backup_path
     server.logger.info("ExtraBackup启动中...")
@@ -200,11 +254,24 @@ def on_load(server , pre_state):
                 config["localfolder"]=os.path.join(config["localfolder"],"export")
                 server.logger.info("已检测到PrimeBackup导出文件夹")
                 server.logger.info("ExtraBackup以pb模式启动")
+        elif config["mode"]=="qb":
+            pass
+        elif config["mode"]=="normal":
+            pass
+        else:
+            server.logger.warn("未知的启动模式！"+config["mode"])
+            server.logger.warn("ExtraBackup将卸载！")
+            on_unload(server)
+        schedule_backup_config=config["schedule_backup"]
+        backup_timer(schedule_backup_config,server)
+        start_scheduler_thread(server)
         server.logger.info("Extra Backup启动成功")
     elif config["enable"]=="false":
         server.logger.warn("ExtraBackup没有运行，原因是你没有开启该插件！")
+
     else:
         server.logger.warn("错误的配置项：enable")
+
     
 def on_unload(server):
     if uploading:
@@ -214,4 +281,4 @@ def on_unload(server):
         server.logger.info("Extra Backup正在下载存档备份，请等待下载完成")
         server.logger.info("如需立即终止下载请使用!!exb abort指令")
     else:
-        server.logger.info("Extra Backup已成功卸载")
+        server.logger.info("Extra Backup已卸载")
