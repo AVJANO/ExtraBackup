@@ -107,19 +107,71 @@ def backup_path_loader():
             return backup_path
         
 
+
 @mcdr.new_thread
-def upload(s:mcdr.CommandSource , backup_name , _backup_path , local_file):
+def download(s:mcdr.CommandSource , command):
+    global downloading
+    try:
+        os.makedirs("exb_downloads")
+    except:
+        pass
+    if command["from"] in backup_path:
+        backup=backup_path[command["from"]]
+        if backup["enable"]=="true":
+            try:
+                downloading=True
+                s.reply("开始下载备份"+command["file_name"])
+                if command["file_name"] not in os.listdir(download_path):
+                    shutil.copy(os.path.join(backup["address"], command["file_name"] ) , download_path)
+                    downloading=False
+                    s.reply("备份"+command["file_name"]+"下载成功！")
+                else:
+                    s.reply("跳过下载备份"+command["file_name"]+"原因是：文件已存在")
+            except Exception as e:
+                s.reply("下载"+command["file_name"]+"失败：")
+                s.reply(e)
+                downloading=False
+        else:
+            s.reply(f"无法从{command["from"]}下载存档，原因是：未开启的备份路径")
+
+
+
+def uploadall(s:mcdr.CommandSource,server:mcdr.PluginServerInterface=this_server):
+    s.reply("手动备份触发，开始上传备份")
+    for name in backup_path:
+        backup_dest=backup_path[name]
+        if backup_dest["enable"]=="true":
+            for file in os.listdir(config["localfolder"]):
+                upload(s , name , backup_path[name] , os.path.join(config["localfolder"], file))
+                time.sleep(0.2)
+        else:
+            s.reply("已跳过"+name+"备份")
+
+
+def schedule_uploadall():
+    this_server.logger.info("定时备份触发，开始上传备份")
+    for name in backup_path:
+        backup_dest=backup_path[name]
+        if backup_dest["enable"]=="true":
+            for file in os.listdir(config["localfolder"]):
+                schedule_upload(this_server , name , backup_path[name] , os.path.join(config["localfolder"], file))
+        else:
+            this_server.logger.info("已跳过"+name+"备份")
+
+
+@mcdr.new_thread
+def schedule_upload(s:mcdr.PluginServerInterface , backup_name , _backup_path , local_file):
     global uploading
     mode=_backup_path["mode"]
     if mode=="ftp":
         uploading = True
-        s.reply("开始向"+backup_name+"上传备份...")
+        s.logger.info("开始向"+backup_name+"上传备份...")
         try:
             uploader = ftplib.FTP()
             pass
         except Exception as e:
-            s.reply("向"+backup_name+"上传备份失败！原因是：")
-            s.reply(e)
+            s.logger.info("向"+backup_name+"上传备份失败！原因是：")
+            s.logger.info(e)
         finally:
             uploader.quit()
             uploading=False
@@ -127,15 +179,15 @@ def upload(s:mcdr.CommandSource , backup_name , _backup_path , local_file):
         try:
             uploading=True
             address=_backup_path["address"]
-            s.reply("开始向"+backup_name+"上传备份"+Path(local_file).name)
+            s.logger.info("开始向"+backup_name+"上传备份"+Path(local_file).name)
             if Path(local_file).name not in os.listdir(_backup_path["address"]):
                 shutil.copy(local_file , address)
-                s.reply("备份"+Path(local_file).name+"向"+backup_name+"上传成功！")
+                s.logger.info("备份"+Path(local_file).name+"向"+backup_name+"上传成功！")
             else:
-                s.reply("已跳过向"+backup_name+"备份，原因是：已存在同名文件"+Path(local_file).name)
+                s.logger.info("已跳过向"+backup_name+"备份，原因是：已存在同名文件"+Path(local_file).name)
         except Exception as e:
-            s.reply("向"+backup_name+"上传备份失败！原因是：")
-            s.reply(e)
+            s.logger.info("向"+backup_name+"上传备份失败！原因是：")
+            s.logger.info(e)
         finally:
             uploading=False
     elif mode=="smb":
@@ -147,56 +199,81 @@ def upload(s:mcdr.CommandSource , backup_name , _backup_path , local_file):
     elif mode=="ssh":
         pass
     else:
-        s.reply("无法向"+backup_name+"备份！原因是：不支持的协议("+mode+")！")
+        s.logger.info("无法向"+backup_name+"备份！原因是：不支持的协议("+mode+")！")
 
 
 @mcdr.new_thread
-def download(s:mcdr.CommandSource , name:str , backup_file:str):
-    global downloading
-    try:
-        os.makedirs("exb_downloads")
-    except:
-        pass
-    if name in backup_path:
-        backup=backup_path[name]
-        try:
-            downloading=True
-            s.reply("开始下载备份"+backup_file)
-            if Path(backup_file).name not in os.listdir(download_path):
-                shutil.copy(os.path.join(backup["address"], backup_file ) , download_path)
-                downloading=False
-                s.reply("备份"+backup_file+"下载成功！")
-            else:
-                s.reply("跳过下载备份"+Path(backup_file).name+"原因是：文件已存在")
-        except Exception as e:
-            s.reply("下载"+backup_file+"失败：")
-            s.reply(e)
-            downloading=False
-    else:
-        s.reply("下载存档失败！原因：未知的下载源"+name)
-
-
-
-def uploadall(s:mcdr.CommandSource,source):
-    if source=="schedule":
-        s.reply("定时备份触发，开始上传备份")
-    else:
-        s.reply("手动备份触发，开始上传备份")
-    for name in backup_path:
-        backup_dest=backup_path[name]
-        if backup_dest["enable"]=="true":
-            for file in os.listdir(config["localfolder"]):
-                upload(s , name , backup_path[name] , os.path.join(config["localfolder"], file))
+def upload(s:mcdr.CommandSource , backup_name , _backup_path , local_file):
+    global uploading
+    if _backup_path["enable"]=="true":
+        mode=_backup_path["mode"]
+        if mode=="ftp":
+            uploading = True
+            s.reply("开始向"+backup_name+"上传备份...")
+            try:
+                uploader = ftplib.FTP()
+                pass
+            except Exception as e:
+                s.reply("向"+backup_name+"上传备份失败！原因是：")
+                s.reply(e)
+            finally:
+                uploader.quit()
+                uploading=False
+        elif mode=="local":
+            try:
+                uploading=True
+                address=_backup_path["address"]
+                s.reply("开始向"+backup_name+"上传备份"+Path(local_file).name)
+                if Path(local_file).name not in os.listdir(_backup_path["address"]):
+                    shutil.copy(local_file , address)
+                    s.reply("备份"+Path(local_file).name+"向"+backup_name+"上传成功！")
+                else:
+                    s.reply("已跳过向"+backup_name+"备份，原因是：已存在同名文件"+Path(local_file).name)
+            except Exception as e:
+                s.reply("向"+backup_name+"上传备份失败！原因是：")
+                s.reply(e)
+            finally:
+                uploading=False
+        elif mode=="smb":
+            pass
+        elif mode=="ftps":
+            pass
+        elif mode=="sftp":
+            pass
+        elif mode=="ssh":
+            pass
         else:
-            s.reply("已跳过"+name+"备份")
+            s.reply("无法向"+backup_name+"备份！原因是：不支持的协议("+mode+")！")
+
+def cmd_upload(s:mcdr.CommandSource , commands):
+    for backup_name in backup_path:
+        backup=backup_path[backup_name]
+        if backup["mode"]=="local":
+            try:
+                upload(s,backup_name,backup_path[backup_name],os.path.join(config["localfolder"], commands["file_name"]))
+            except Exception as e:
+                s.reply(f"上传{commands["file_name"]}失败：{e}")
+        elif backup["mode"]=="ftp":
+            s.reply(f"跳过向{backup_name}备份，原因是：")
+            s.reply("暂不支持ftp备份")
+        else:
+            s.reply(f"不支持的备份模式：{backup["mode"]}")
 
 
-def downloadall(source:mcdr.CommandSource , from_where:str):
-    source.reply("开始从下载全部备份:"+from_where["from"])
+def downloadall(source:mcdr.CommandSource , from_where):
+    source.reply("开始从"+from_where["from"]+"下载全部备份:")
     if from_where["from"] in backup_path:
         backup=backup_path[from_where["from"]]
-        for file in os.listdir(backup["address"]):
-            download(source , from_where["from"] , file)
+        if backup["mode"]=="local":
+            for file in os.listdir(backup["address"]):
+                from_where["file_name"]=file
+                download(source , from_where)
+                time.sleep(0.2)
+        elif backup["mode"]=="ftp":
+            source.reply(f"无法从{from_where["from"]}下载备份，原因是：")
+            source.reply("暂不支持ftp模式")
+        else:
+            source.reply(f"不支持的备份模式：{backup["mode"]}")
     else:
         source.reply("下载失败！原因：未知的备份位置"+from_where["from"])
 
@@ -213,7 +290,7 @@ def backup_timer(schedule_config,server:mcdr.PluginServerInterface):
     if schedule_config["enable"]=="true":
         server.logger.info("定时备份已启动")
         seconds = time_str(schedule_config["interval"])
-        schedule.every(seconds).seconds.do(uploadall,server,source="schedule")
+        schedule.every(seconds).seconds.do(schedule_uploadall)
         start_scheduler_thread(server)
     else:
         server.logger.info("定时备份未启动")
@@ -230,7 +307,7 @@ def start_scheduler_thread(server:mcdr.PluginServerInterface):
 
 
 def on_load(server:mcdr.PluginServerInterface, pre_state):
-    global config,backup_path
+    global config,backup_path,this_server
     server.logger.info("ExtraBackup启动中...")
     this_server=server
     server.logger.info("正在读取配置文件...")
@@ -265,7 +342,7 @@ def on_load(server:mcdr.PluginServerInterface, pre_state):
         exb_command=mcdr.SimpleCommandBuilder()
         exb_command.command("!!exb uploadall",uploadall)
         exb_command.command("!!exb downloadall <from>",downloadall)
-        exb_command.command("!!exb upload <file_name>",upload)
+        exb_command.command("!!exb upload <file_name>",cmd_upload)
         exb_command.command("!!exb download <from> <file_name>",download)
         exb_command.command("!!exb list",make_list)
         exb_command.command("!!exb abort",abort)
