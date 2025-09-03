@@ -423,7 +423,7 @@ def manual_prnue(s:mcdr.CommandSource , command={}):
     max_lifetime = time_loader(prnue_config["max_lifetime"])
     if "location" in command:
         if command["location"] == "local":
-            s.reply(t("manual_prnue_started"))
+            s.reply(t("local_prnue_started"))
             for file in os.listdir(config["localfolder"]):
                 if (time.time() - os.path.getctime(os.path.join(config["localfolder"], file))) >= max_lifetime:
                     try:
@@ -464,7 +464,7 @@ def manual_prnue(s:mcdr.CommandSource , command={}):
         s.reply(t("manual_prnue_finished"))
     else:
         s.reply(t("manual_prnueall_started"))
-        s.reply(t("local_prnue_start"))
+        s.reply(t("local_prnue_started"))
         for file in os.listdir(config["localfolder"]):
             if (time.time() - os.path.getctime(os.path.join(config["localfolder"], file))) >= max_lifetime:
                 try:
