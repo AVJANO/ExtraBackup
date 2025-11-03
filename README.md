@@ -25,21 +25,21 @@ ExtraBackup——为你的存档找一个（好几个）温馨的家
 
 {
 
-  "enable":"true",   #是否启用ExtraBackup插件
+  "enable":"true",        #是否启用ExtraBackup插件
   
-  "mode":"pb",        #启动模式，主要用于自动帮助定位存档文件夹;可选项："pb"：定位到pb的pb_files；  "local"：手动输入存档备份位置
+  "mode":"pb",            #启动模式，主要用于自动帮助定位存档文件夹;可选项："pb"：定位到pb的pb_files；  "local"：手动输入存档备份位置
   
-  "localfolder":"",    #本地备份位置，如果选用pb模式，则留空
+  "localfolder":"",       #本地备份位置，如果选用pb模式，则留空
   
-  "multithreading":"true",  #多线程模式是否开启
+  "multithreading":"true",              #多线程模式是否开启
   
   "schedule_backup":{"enable":"false",  #是否开启定时上传备份
   
                      "interval":"30m"},  #定时时间间隔
                      
-  "schedule_prnue":{"enable":"false",   #是否开启定时清理备份
+  "schedule_prnue":{"enable":"false",    #是否开启定时清理备份
   
-                    "interval":"1d",  #清理间隔
+                    "interval":"1d",     #清理间隔
                     
                     "max_lifetime":"1d"}   #文件最大创建时长，超过该时长的文件将被删除
                     
