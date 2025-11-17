@@ -27,28 +27,28 @@ ExtraBackup——为你的存档找一个（好几个）温馨的家
 
 {
 
-  "enable":"false",     #是否启用该插件
-  
-  "language":"zh_cn",     #默认语言
-  
-  "max_thread":"-1",      #上传/下载最大线程数，-1为无限制
-  
-  "schedule_backup":{
-  
-      "enable":"false",        #是否启用定时上传备份
-      
-      "interval":"30m"          #上传时间间隔
-      
+    "enable":"false",     #是否启用该插件
+    
+    "language":"zh_cn",     #默认语言
+    
+    "max_thread":"-1",      #上传/下载最大线程数，-1为无限制
+    
+    "schedule_backup":{
+    
+        "enable":"false",        #是否启用定时上传备份
+        
+        "interval":"30m"          #上传时间间隔
+        
     },
-  
-  "schedule_prune":{
-  
-      "enable":"false",          #是否启用定时清理
-      
-      "interval":"1d",            #定时清理时间间隔
-      
-      "max_lifetime":"3d"        #文件最大生命时间
-      
+    
+    "schedule_prune":{
+    
+        "enable":"false",          #是否启用定时清理
+        
+        "interval":"1d",            #定时清理时间间隔
+        
+        "max_lifetime":"3d"        #文件最大生命时间
+        
     }
   
 }
