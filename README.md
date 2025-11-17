@@ -26,6 +26,7 @@ ExtraBackup——为你的存档找一个（好几个）温馨的家
 主配置：
 
 {
+
   "enable":"false",     #是否启用该插件
   
   "language":"zh_cn",     #默认语言
