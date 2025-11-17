@@ -39,7 +39,7 @@ ExtraBackup——为你的存档找一个（好几个）温馨的家
       
       "interval":"30m"          #上传时间间隔
       
-  },
+    },
   
   "schedule_prune":{
   
@@ -49,7 +49,7 @@ ExtraBackup——为你的存档找一个（好几个）温馨的家
       
       "max_lifetime":"3d"        #文件最大生命时间
       
-  }
+    }
   
 }
 
