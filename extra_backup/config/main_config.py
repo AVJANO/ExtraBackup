@@ -4,6 +4,7 @@ import json
 from mcdreforged.api.all import *
 
 from extra_backup.utils.Singleton import singleton
+from extra_backup.lang.lang_processor import tr
 
 class DefaultConfig:
     main_config = {
@@ -39,6 +40,12 @@ class Config:
         if self._initialized:
             return
         try:
+            os.mkdir(DefaultConfig().download_path)
+        except FileExistsError:
+            pass
+        except Exception as e:
+            server.logger.error(tr("mkdir_downloads_failed", error = e))
+        try:
             with open(DefaultConfig.config_file, "r") as config_file:
                 self.config = json.load(config_file)
         except FileNotFoundError as e:
@@ -64,7 +71,7 @@ class Config:
         except KeyError:
             self.config[key] = self.default_config[key]
             with open(DefaultConfig.config_file, "w") as config_file:
-                json.dump(self.config, config_file)
+                json.dump(self.config, config_file, indent=4 , ensure_ascii=False)
             return self.default_config[key]
 
     def set(self, key: str, value):
@@ -76,7 +83,7 @@ class Config:
         self.config[key] = value
         try:
             with open(DefaultConfig.config_file, "w") as config_file:
-                json.dump(self.config, config_file)
+                json.dump(self.config, config_file, indent=4 , ensure_ascii=False)
             return None
         except Exception as e:
             return e

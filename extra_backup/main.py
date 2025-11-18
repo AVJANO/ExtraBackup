@@ -4,6 +4,7 @@ from mcdreforged.api.all import *
 from extra_backup.lang.lang_processor import tr
 from extra_backup.lang.lang_processor import Language
 from extra_backup.config.main_config import Config
+from extra_backup.config.backup_config import BackupConfig
 from extra_backup.mcdr.commands import CommandManager
 from extra_backup.task.schedule_task import Scheduler
 from extra_backup.task.main_task import States
@@ -29,6 +30,7 @@ def start_schedule_thread(server: PluginServerInterface):
 def on_load(server: PluginServerInterface , old):
     server.logger.info(tr("Plugin_loading"))
     config = Config(server)
+    BackupConfig()
     if config.get("enable") == "true":
         lang = Language()
         lang.load(config.get("language"))
