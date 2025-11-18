@@ -1,18 +1,18 @@
 {
     "id": "extra_backup",
-    "version": "0.1.7",
+    "version": "1.0.0",
     "name": "Extra Backup",
     "description": {
-        "zh_cn":"全新分布式备份插件，为您的珍贵存档增添一份安心！",
+        "zh_cn":"一个全新的分布式存档备份插件，可以有效防止服务器存档暴毙:P",
         "en_us":"A new distributed backup plugin which adds peace of mind to your valuable archives!"
     },
     "author": "avjano",
     "link": "https://github.com/AVJANO/ExtraBackup",
     "dependencies": {
         "mcdreforged": ">=2.14.7",
-        "prime_backup": ">=1.7.4"
+        "prime_backup": ">=1.10.3"
     },
-    "entrypoint":"extra_backup.ExtraBackup",
+    "entrypoint":"extra_backup.main",
     "resources":[
         "lang"
     ]
