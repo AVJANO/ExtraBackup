@@ -18,7 +18,7 @@ are under development.
 -   Automatically skips duplicate files
 -   Supports download / delete / prune operations
 -   Supports multilingual UI
--   Cron-like scheduled backup & prune tasks
+-   Supports simple interval-based scheduled backup & prune tasks
 
 ------------------------------------------------------------------------
 
