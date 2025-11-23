@@ -3,8 +3,8 @@
     "version": "1.0.1",
     "name": "Extra Backup",
     "description": {
-        "zh_cn":"分布式存档备份插件，可以自动备份存档到不同位置",
-        "en_us":"Distributed archive backup plugin, which can automatically back up archives to different locations."
+        "zh_cn":"一个基于PrimeBackup的分布式存档备份插件，可以自动导出存档并备份到不同位置",
+        "en_us":"A distributed archive backup plugin based on PrimeBackup that can automatically export archives and back them up to different locations"
     },
     "author": "avjano",
     "link": "https://github.com/AVJANO/ExtraBackup",
