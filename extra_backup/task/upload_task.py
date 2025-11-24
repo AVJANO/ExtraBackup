@@ -42,17 +42,37 @@ class Uploader:
                                     failure_backups.append(backup_path)
                         case "ftp":
                             ftp_uploader = FTP(backup_path, backup, source)
-                            ftp_uploader.connect()
-                            match ftp_uploader.upload(str(path)):
-                                case True:
-                                    success_backup_count+=1
-                                    success_backups.append(backup_path)
-                                case False:
-                                    failure_backup_count+=1
+                            try:
+                                # 尝试连接 FTP，如果失败则计为失败并跳到下一个备份路径
+                                if not ftp_uploader.connect():
+                                    failure_backup_count += 1
                                     failure_backups.append(backup_path)
-                                case None:
-                                    skipped_backup_count += 1
-                                    skipped_backups.append(backup_path)
+                                    continue
+
+                                match ftp_uploader.upload(str(path)):
+                                    case True:
+                                        success_backup_count += 1
+                                        success_backups.append(backup_path)
+                                    case False:
+                                        failure_backup_count += 1
+                                        failure_backups.append(backup_path)
+                                    case None:
+                                        skipped_backup_count += 1
+                                        skipped_backups.append(backup_path)
+                            except Exception as e:
+                                # 上传过程中出现异常，同样计为失败并输出错误
+                                failure_backup_count += 1
+                                failure_backups.append(backup_path)
+                                source.reply(
+                                    RText(
+                                        tr("upload_file_failed",
+                                           backup_name=backup_path,
+                                           error=str(e)),
+                                        RColor.red
+                                    )
+                                )
+                            finally:
+                                ftp_uploader.disconnect()
                         case "smb":
                             ...
                         case "sftp":

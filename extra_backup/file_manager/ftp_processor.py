@@ -1,6 +1,4 @@
 import ftplib
-# import socket
-# import chardet
 import os
 from typing import Optional
 from mcdreforged.api.all import *

@@ -9,6 +9,7 @@ from extra_backup.task.upload_task import Uploader
 from extra_backup.task.prune_task import Pruner
 from extra_backup.lang.lang_processor import tr, Language
 from extra_backup.file_manager.local_processor import LocalProcessor as LP
+from extra_backup.file_manager.ftp_processor import FTPProcessor as FP
 from extra_backup.task.download_task import Downloader
 
 
@@ -76,7 +77,15 @@ class CommandManager:
                             return
                         source.reply(tr("no_files"))
                     case "ftp":
-                        ...
+                        source.reply("\n")
+                        ftp = FP(_location, backup_path, source)
+                        files = ftp.list()
+                        if files:
+                            for file in files:
+                                source.reply(file+"\n")
+                            ftp.disconnect()
+                            return
+                        source.reply(tr("no_files"))
                     case "sftp":
                         ...
                     case "smb":
