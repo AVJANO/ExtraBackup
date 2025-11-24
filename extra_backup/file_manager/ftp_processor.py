@@ -40,7 +40,7 @@ class FTPProcessor:
         try:
             self.ftp_client = ftplib.FTP()
             self.ftp_client.encoding = self.encoding
-            self.ftp_client.connect(self.ip, self.port, timeout=10)
+            self.ftp_client.connect(self.ip, self.port, timeout=1)
             self.ftp_client.login(self.username, self.password)
             self.source.reply(tr("ftp_connected", backup_name=self.backup_name))
             return True
