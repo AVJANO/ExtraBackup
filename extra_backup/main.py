@@ -38,6 +38,7 @@ def on_load(server: PluginServerInterface , old):
         commands.command_register()
         start_schedule_thread(server)
     else:
+        server.logger.error(config.get("enable"))
         server.logger.error(tr("Plugin_is_not_enabled"))
 
 def on_unload(server:PluginServerInterface):

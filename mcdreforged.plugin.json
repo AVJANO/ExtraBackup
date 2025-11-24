@@ -1,6 +1,6 @@
 {
     "id": "extra_backup",
-    "version": "1.0.1",
+    "version": "1.1.0",
     "name": "Extra Backup",
     "description": {
         "zh_cn":"一个基于PrimeBackup的分布式存档备份插件，可以自动导出存档并备份到不同位置",
