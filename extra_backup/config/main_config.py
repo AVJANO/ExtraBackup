@@ -23,8 +23,8 @@ class DefaultConfig:
                             "prune_exports":"true"
                         }
                       }
-    config_folder = os.path.join(os.path.join(os.getcwd(), "backup_path"), "extra_backup")
-    config_file = os.path.join(config_folder, "backup_path.json")
+    config_folder = os.path.join(os.path.join(os.getcwd(), "config"), "extra_backup")
+    config_file = os.path.join(config_folder, "config.json")
     permissions_file = os.path.join(config_folder, "permissions.json")
     backup_config_file = os.path.join(config_folder, "backup_path.json")
     download_path = os.path.join(os.getcwd(), "exb_downloads")
