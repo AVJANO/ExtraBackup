@@ -49,7 +49,6 @@ class Config:
             with open(DefaultConfig.config_file, "r") as config_file:
                 self.config = json.load(config_file)
         except FileNotFoundError as e:
-            server.logger.error("01: "+str(e))
             self.config = DefaultConfig.main_config
             if os.path.exists(DefaultConfig.config_folder):
                 with open(DefaultConfig.config_file, "w") as config_file:
@@ -58,11 +57,7 @@ class Config:
                 os.makedirs(DefaultConfig.config_folder)
                 with open(DefaultConfig.config_file, "w") as config_file:
                     json.dump(self.config , config_file , indent=4 , ensure_ascii=False)
-        except Exception as e:
-            server.logger.error("01: " + str(e))
-            raise e
         finally:
-            server.logger.error(self.config)
             self.server = server
             self._initialized = True
 
