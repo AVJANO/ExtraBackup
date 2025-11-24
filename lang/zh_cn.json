@@ -47,5 +47,11 @@
   "change_language_success": "语言{language}切换成功！",
   "change_language_failed": "切换到语言{language}失败! 原因：不支持的语言！",
 
+  "URL_format_error": "URL格式错误",
+  "ftp_connected": "FTP服务器{backup_name}连接成功",
+  "ftp_not_connected": "FTP服务器未连接",
+  "ftp_connection_error": "FTP服务器{backup_name}连接失败，原因是: {error}",
+  "folder_switch_or_generate_failed": "目录切换或创建失败：{error}",
+
   "list_failed": "从{address}获取文件列表失败, 原因是：{error}"
 }

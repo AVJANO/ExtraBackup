@@ -47,5 +47,11 @@
   "change_language_success": "Language switched to {language} successfully!",
   "change_language_failed": "Failed to switch to language {language}! Reason: unsupported language!",
 
+  "URL_format_error": "Invalid URL format",
+  "ftp_connected": "FTP server {backup_name} connected successfully",
+  "ftp_not_connected": "FTP server is not connected",
+  "ftp_connection_error": "Failed to connect to FTP server {backup_name}, reason: {error}",
+  "folder_switch_or_generate_failed": "Failed to switch or create directory: {error}",
+
   "list_failed": "Failed to fetch file list from {address}, reason: {error}"
 }
