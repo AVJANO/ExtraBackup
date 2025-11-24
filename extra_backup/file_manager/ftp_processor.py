@@ -50,7 +50,7 @@ class FTPProcessor:
             self.source.reply(RText(tr("ftp_connection_error", backup_name=self.backup_name, error=str(e)), RColor.red))
             return False
 
-    def upload(self, file_path: str) -> bool:
+    def upload(self, file_path: str):
         if self.ftp_client is None:
             self.source.reply(RText(tr("ftp_not_connected"), RColor.yellow))
             return False
@@ -72,6 +72,11 @@ class FTPProcessor:
             except Exception as e:
                 self.source.reply(RText(tr("folder_switch_or_generate_failed", backup_name=self.backup_name, error=str(e)), RColor.red))
                 return False
+
+
+            if remote_filename in self.list():
+                self.source.reply(RText(tr("upload_skip_duplicate", backup_name=self.backup_name), RColor.yellow))
+                return None
 
             # 上传文件
             with open(file_path, "rb") as f:
